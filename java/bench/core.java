@@ -137,11 +137,18 @@ public static BinaryTreeNode createBinaryTree (int depth, int[] counter)
  btn.right = createBinaryTree(depth - 1 , counter);
  return  btn ;}
 
- public boolean binaryTreeDFS(BinaryTreeNode root, int target)
+ public static boolean binaryTreeDFS(BinaryTreeNode root, int target)
  {if (root == null) return false ;
   return root.value == target ||
     binaryTreeDFS(root.left, target) ||
     binaryTreeDFS (root.right, target);}
+
+public static boolean binaryTreeDFSTest(int depth, int target)
+ {
+     int[] counter = new int[0];
+     counter[0] = 0;
+     return binaryTreeDFS(createBinaryTree(depth,counter),target);
+  }
 
     // (defn create−binary−tree [depth counter−atom]
     //   (when (> depth  0)
@@ -175,6 +182,13 @@ public static boolean binaryTreeBFS(BinaryTreeNode root, int target)
     if (item.left != null) queue.add (item.left);
     if (item.right != null) queue.add (item.right);}
     return false;}
+
+public static boolean binaryTreeBFSTest(int depth, int target)
+{
+    int[] counter = new int[0];
+    counter[0] = 0;
+    return binaryTreeBFS(createBinaryTree(depth,counter),target);
+    }
 
 // (defn binary−tree−BFS [root target]
 //   (loop [queue (conj clojure.lang.PersistentQueue/EMPTY root)]

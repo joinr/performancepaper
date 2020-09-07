@@ -201,8 +201,7 @@
               acc))
           _   (Collections/shuffle alist)
           res (int-array size)]
-      (dotimes [i size]
-              (aset res i ^int (.get alist i)))
+      (dotimes [i size] (aset res i ^int (.get alist i)))
       (doto res Arrays/sort))))
 
 ;; performancepaper.core> (c/quick-bench (create-sorted-array3 100))
@@ -228,12 +227,51 @@
 ;;     retMap.put(i , ++ i ) ;
 ;;  return  retMap ;}
 
-(defn create−map[size]
+;; Evaluation count : 538998 in 6 samples of 89833 calls.
+;; Execution time mean : 1.178573 µs
+;; Execution time std-deviation : 40.404054 ns
+;; Execution time lower quantile : 1.142367 µs ( 2.5%)
+;; Execution time upper quantile : 1.237344 µs (97.5%)
+;; Overhead used : 1.800162 ns
+
+;;9x
+(defn create-map [size]
   (loop [map  (transient  {}),
          i    (int size)]
     (if  (>  i  0)
       (recur  (assoc! map i  (+ i 1))  (- i  1) )
       (persistent!  map))))
+
+;; Evaluation count : 61686 in 6 samples of 10281 calls.
+;; Execution time mean : 9.874480 µs
+;; Execution time std-deviation : 96.973621 ns
+;; Execution time lower quantile : 9.750675 µs ( 2.5%)
+;; Execution time upper quantile : 9.964194 µs (97.5%)
+;; Overhead used : 1.800162 ns
+
+(with-unchecked
+  (defn create-map2 [size]
+    (loop [^clojure.lang.ITransientAssociative
+           map  (transient  {}),
+           i    (int size)]
+      (if  (>  i  0)
+        (recur  (.assoc map i  (+ i 1))
+                (- i  1))
+        (persistent!  map)))))
+
+(with-unchecked
+  (defn create-map3 [^ long size]
+    (let [^java.util.HashMap map  (java.util.HashMap. size)]
+      (dotimes [i size]
+        (.put map i  (+ i 1))))))
+
+;; Evaluation count : 450894 in 6 samples of 75149 calls.
+;; Execution time mean : 1.338286 µs
+;; Execution time std-deviation : 27.816513 ns
+;; Execution time lower quantile : 1.304915 µs ( 2.5%)
+;; Execution time upper quantile : 1.372651 µs (97.5%)
+;; Overhead used : 1.800162 ns
+
 
 ;;3.4 Object Creation
 
@@ -256,14 +294,94 @@
 ;; {LLNode last = null ;
 ;;  for (int i = 0; i < count; ++ i)
 ;;           last = new LLNode(last) ;
-;;           r e t u r n  l a s t ;}
+;;           return last;}
 
-(defn create−objects [count]
+;; performancepaper.core> (c/quick-bench (bench.core/createObjects 100))
+;; Evaluation count : 2368566 in 6 samples of 394761 calls.
+;; Execution time mean : 249.927510 ns
+;; Execution time std-deviation : 4.557640 ns
+;; Execution time lower quantile : 244.464795 ns ( 2.5%)
+;; Execution time upper quantile : 254.444188 ns (97.5%)
+;; Overhead used : 1.800162 ns
+
+(defn create-objects[count]
   (loop [last nil
          i (int  count)]
     (if  (=  0  i )
       last
       (recur  {:next  last} (- i  1)))))
+
+;; Evaluation count : 916590 in 6 samples of 152765 calls.
+;; Execution time mean : 673.619823 ns
+;; Execution time std-deviation : 26.588156 ns
+;; Execution time lower quantile : 647.556044 ns ( 2.5%)
+;; Execution time upper quantile : 701.464334 ns (97.5%)
+;; Overhead used : 1.800162 ns
+
+(with-unchecked
+  (defn create-objects2 [count]
+    (loop [last nil
+           i (int  count)]
+      (if  (==  i 0)
+        last
+        (recur  {:next  last} (- i  1))))))
+
+;; Evaluation count : 933462 in 6 samples of 155577 calls.
+;; Execution time mean : 646.923626 ns
+;; Execution time std-deviation : 11.946099 ns
+;; Execution time lower quantile : 634.453274 ns ( 2.5%)
+;; Execution time upper quantile : 664.344180 ns (97.5%)
+;; Overhead used : 1.800162 ns
+
+;;records are faster to construct, but implement a bunch of
+;;stuff and carry more state, so more setup.  Still very
+;;much faster to create when you have fixed fields, like
+;;the node class.
+(defrecord ll-node [next])
+(defn create-objects3 [count]
+  (loop [last nil
+         i (int  count)]
+    (if  (==  i 0)
+      last
+      (recur  (ll-node.  last) (- i  1)))))
+
+;; Evaluation count : 1699422 in 6 samples of 283237 calls.
+;; Execution time mean : 348.583970 ns
+;; Execution time std-deviation : 6.587955 ns
+;; Execution time lower quantile : 337.022098 ns ( 2.5%)
+;; Execution time upper quantile : 354.655388 ns (97.5%)
+;; Overhead used : 1.800162 ns
+
+;; Found 1 outliers in 6 samples (16.6667 %)
+;; low-severe	 1 (16.6667 %)
+;; Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
+
+;;revisit
+(with-unchecked
+  (defn create-objects4 [^long count]
+    (loop [last nil
+           i    count]
+      (if  (zero? i) #_(==  i 0)
+        last
+        (recur  (ll-node.  last) (dec i))))))
+
+
+;;types have less to setup, very barebones like the node class.
+(deftype ll-node-type [next])
+
+(with-unchecked
+  (defn create-objects5 [^long count]
+    (loop [last nil
+           i    count]
+      (if  (==  i 0)
+           last
+           (recur  (ll-node-type.  last) (dec i))))))
+;; Evaluation count : 2440158 in 6 samples of 406693 calls.
+;; Execution time mean : 249.399392 ns
+;; Execution time std-deviation : 5.009429 ns
+;; Execution time lower quantile : 244.748218 ns ( 2.5%)
+;; Execution time upper quantile : 256.732288 ns (97.5%)
+;; Overhead used : 1.800162 ns
 
 ;;3.5 Binary Tree DFS
 
@@ -288,6 +406,15 @@
 ;;     binaryTreeDFS(root.left, target) ||
 ;;     binaryTreeDFS (root.right, target);}
 
+;;Added by joinr
+;; public boolean binaryTreeDFSTest(int depth, int target)
+;; {
+;;  int[] counter = new int[0];
+;;  counter[0] = 0;
+;;  return binaryTreeBFS(createBinaryTree(depth,counter),target);
+;;  }
+
+(c/quick-becnh (bench.core/binaryTreeDFSTest 7 128))
 
 (defn create−binary−tree [depth counter−atom]
   (when (> depth  0)
@@ -303,6 +430,8 @@
     (or (=  (:value  root)  target)
         (binary−tree−DFS  (:left  root)  target)
         (binary−tree−DFS  (:right root)  target))))
+
+(defrecord binary-node [^int value left right])
 
 ;;3.6 Binary Tree BFS
 
@@ -321,6 +450,14 @@
 ;;     if (item.left != null) queue.add (item.left);
 ;;     if (item.right != null) queue.add (item.right);}
 ;;     return false;}
+
+;;Added by joinr
+;; public boolean binaryTreeBFSTest(int depth, int target)
+;; {
+;;  int[] counter = new int[0];
+;;  counter[0] = 0;
+;;  return binaryTreeBFS(createBinaryTree(depth,counter),target);
+;;  }
 
 (defn binary−tree−BFS [root target]
   (loop [queue (conj clojure.lang.PersistentQueue/EMPTY root)]
