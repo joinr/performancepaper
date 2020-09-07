@@ -52,13 +52,13 @@ nullify the effects of different hardware.
 Executiontimes were measured for problem sizes of 2000, 20000, 200000, 2000000
 and 20000000,""
 
-#+begin_src+ java
+#+begin_src java
  private void Recurse(int cnt)
  {if (cnt > 0)
   Recurse (cnt - 1);}
-#+end_src+ 
+#+end_src 
 
-#+begin_src+ clojure
+#+begin_src clojure
  performancepaper.core> (c/quick-bench (bench.core/Recurse 10))
  Evaluation count : 49359366 in 6 samples of 8226561 calls.
  Execution time mean : 10.123866 ns
@@ -80,14 +80,15 @@ and 20000000,""
  Execution time lower quantile : 213.224904 ns ( 2.5%)
  Execution time upper quantile : 221.431481 ns (97.5%)
  Overhead used : 1.804565 ns
-#+end_src+ 
+#+end_src 
 
 Off the bat, we are in pretty bad spot. Thankfully this can be heavily mitigated
 by using unchecked math and a type hint ( ~with-unchecked~ has the effect of
 setting ~*unchecked-math*~ to true for the scope of the body, then reverting to
 ~false~ after evaluation).
 
-#+begin_source+ clojure
+#+begin_src clojure
+
 (with-unchecked
   (defn pure-recursion2 [^long cnt]
     (if  (pos?   cnt)
@@ -100,7 +101,7 @@ setting ~*unchecked-math*~ to true for the scope of the body, then reverting to
  Execution time lower quantile : 15.545890 ns ( 2.5%)
  Execution time upper quantile : 15.907675 ns (97.5%)
  Overhead used : 1.804565 ns
-#+end_src+
+#+end_src
 
 That gets us to within 1.5x.
 
@@ -113,7 +114,7 @@ in the original, we can just use the ~recur~ form to semantically
 re-enter the fuction with new arguments, while operationally the
 clojure compiler optimizes this to a loop:
 
-#+begin_src+
+#+begin_src clojure
 (defn pure-recursion3 [cnt]
   (if (> cnt 0)
     (recur (dec cnt))))
@@ -125,7 +126,7 @@ clojure compiler optimizes this to a loop:
  Execution time upper quantile : 63.504731 ns (97.5%)
  Overhead used : 1.797578 ns
  nil
-#+end_src+
+#+end_src
 
 We are now 0.697x of the original java runtime, so faster. We're also somewhat
 cheating at the machine level, but at the language level, ~recur~ (in my
@@ -174,7 +175,7 @@ Clojure implemention underspecified
    ...) author elides this, and `create-list` is not provided.
 
  (sort  list)
-#+end_src+ 
+#+end_src 
 
 Since the original paper elided the exact source code for
 the clojure implementation, I filled in the rest to maintain
@@ -262,7 +263,7 @@ more interop, we get to 1.07x, slightly slower but not bad:
  Execution time lower quantile : 4.477268 µs ( 2.5%)
  Execution time upper quantile : 4.902860 µs (97.5%)
  Overhead used : 1.800162 ns
-#+end_src+ 
+#+end_src 
 
 * 3.3 Map Creation
 
@@ -273,15 +274,15 @@ more interop, we get to 1.07x, slightly slower but not bad:
 Execution times were measured for20000, 63246, 200000, 632456 and 2000000
 different key-value pairs."
 
-#+begin_src+ java
+#+begin_src java
  private  HashMap<Integer ,  Integer> createMap (int  sze)
  {HashMap<Integer ,  Integer> retMap= new HashMap<Integer , Integer>(sze) ;
   for (int i = 0; i < sze ;)
      retMap.put(i , ++ i ) ;
   return  retMap ;}
-#+end_src+
+#+end_src
 
-#+begin_src+ clojure
+#+begin_src clojure
 (c/quick-bench (bench.core/createMap 100))
  Evaluation count : 538998 in 6 samples of 89833 calls.
  Execution time mean : 1.178573 µs
@@ -289,13 +290,13 @@ different key-value pairs."
  Execution time lower quantile : 1.142367 µs ( 2.5%)
  Execution time upper quantile : 1.237344 µs (97.5%)
  Overhead used : 1.800162 ns
-#+end_src+
+#+end_src
 
 We are comparing a java program that builds a mutable hashmap via tight loop
 iteration against a clojure program that uses a transient clojure hashmap to
 build and the coerce into a persistent clojure map.
 
-#+begin_src+ clojure
+#+begin_src clojure
 (defn create-map [size]
   (loop [map  (transient  {}),
          i    (int size)]
@@ -309,13 +310,13 @@ build and the coerce into a persistent clojure map.
  Execution time lower quantile : 9.750675 µs ( 2.5%)
  Execution time upper quantile : 9.964194 µs (97.5%)
  Overhead used : 1.800162 ns
-#+end_src+
+#+end_src
 
 Our baseline is ~9x slower, despite the use of
 transients.  We may try to leverage unchecked
 math as before, and direct method invocation
 to make things a tad more efficient:
-#+begin_src+ clojure
+#+begin_src clojure
 (with-unchecked
   (defn create-map2 [size]
     (loop [^clojure.lang.ITransientAssociative
@@ -333,7 +334,7 @@ to make things a tad more efficient:
  Execution time lower quantile : 9.392887 µs ( 2.5%)
  Execution time upper quantile : 9.723504 µs (97.5%)
  Overhead used : 1.804565 ns
-#+end_src+
+#+end_src
 
 Looks like not much change; still around 9x slower.
 It seems that the cost of building and coercing a transient
@@ -355,7 +356,7 @@ we can just use java hashmaps from clojure via interop:
  Execution time lower quantile : 1.191533 µs ( 2.5%)
  Execution time upper quantile : 1.268660 µs (97.5%)
  Overhead used : 1.804565 ns
-#+end_src+ 
+#+end_src 
 
 Leveraging interop leaves us 1.04x, slower but perhaps that's
 within the margins.
@@ -371,7 +372,7 @@ within the margins.
  Execution times were measured for 100000, 316228, 1000000, 3162278and 10000000
  linked objects"
 
-#+begin_src+ java
+#+begin_src java
  private  class  LLNode{
   public  LLNode  next ;
   public  LLNode (LLNode  next ){
@@ -383,9 +384,9 @@ within the margins.
   for (int i = 0; i < count; ++ i)
            last = new LLNode(last) ;
            return last;}
-#+end_src+ java
+#+end_src java
 
-#+begin_src+ clojure
+#+begin_src clojure
  performancepaper.core> (c/quick-bench (bench.core/createObjects 100))
  Evaluation count : 2368566 in 6 samples of 394761 calls.
  Execution time mean : 249.927510 ns
@@ -407,7 +408,7 @@ within the margins.
  Execution time lower quantile : 647.556044 ns ( 2.5%)
  Execution time upper quantile : 701.464334 ns (97.5%)
  Overhead used : 1.800162 ns
-#+end_src+
+#+end_src
 
 Our baseline implementation compares a java class-based implementation to a
 clojure hash-map based one. Notably unlike the java implementation, the hashmap
@@ -433,7 +434,7 @@ slow path compared to java.  We can add unchecked math, and get some marginal ga
  Execution time lower quantile : 634.453274 ns ( 2.5%)
  Execution time upper quantile : 664.344180 ns (97.5%)
  Overhead used : 1.800162 ns
-#+end_src+
+#+end_src
 
 but the real target is to get a simpler container that's easy to construct.
 
@@ -441,7 +442,7 @@ Records are faster to construct, but they implement a bunch of stuff and carry
 more state, so there is more setup. Still they are very much faster to create
 when you have fixed fields, like the node class. 
 
-#+begin_src+ clojure
+#+begin_src clojure
 (defrecord ll-node [next])
 
 (defn create-objects3 [count]
@@ -461,13 +462,13 @@ when you have fixed fields, like the node class.
  Found 1 outliers in 6 samples (16.6667 %)
  low-severe	 1 (16.6667 %)
  Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
-#+end_src+
+#+end_src
 
 
 Record-based is now 1.39x slower; getting close.
 As it turns out, types have less to setup, very barebones like the node class.
 
-#+begin_src+ clojure
+#+begin_src clojure
 (deftype ll-node-type [next])
 
 (with-unchecked
@@ -483,7 +484,7 @@ As it turns out, types have less to setup, very barebones like the node class.
  Execution time lower quantile : 244.748218 ns ( 2.5%)
  Execution time upper quantile : 256.732288 ns (97.5%)
  Overhead used : 1.800162 ns
-#+end_src+
+#+end_src
 
 With a barebones class equivalent and direct field access, 
 we get ~1x, pretty much identical to java now, with very similar
@@ -504,7 +505,7 @@ hashmaps, while the java implementation leverages classes and
 field acess.  Persistent hashmaps should have a bit higher
 instantiation and key lookup cost compared to raw classes.
 
-#+begin_src+ java
+#+begin_src java
  public BinaryTreeNode createBinaryTree (int depth, int[] counter)
  {if (depth == 0) return null;
   int value = counter[0]++;
@@ -526,9 +527,9 @@ instantiation and key lookup cost compared to raw classes.
   counter[0] = 0;
   return binaryTreeBFS(createBinaryTree(depth,counter),target);
   }
-#+end_src+ 
+#+end_src 
 
-#+begin_src+ clojure
+#+begin_src clojure
  performancepaper.core> (c/quick-bench (bench.core/binaryTreeDFSTest 7 126))
 
  Evaluation count : 643680 in 6 samples of 107280 calls.
@@ -563,7 +564,7 @@ instantiation and key lookup cost compared to raw classes.
  Execution time upper quantile : 13.059028 µs (97.5%)
  Overhead used : 1.804565 ns
 
-#+end_src+
+#+end_src
 
 We start at 14x slower, although there is a lot of incidental overhead to 
 explore:
@@ -576,7 +577,7 @@ explore:
 
 with potentially lots of room to improve.
 
-#+begin_src+ clojure
+#+begin_src clojure
 (with-unchecked
   (defn create-binary-tree2 [^long depth  counter-atom]
     (when (> depth  0)
@@ -607,7 +608,7 @@ with potentially lots of room to improve.
  low-severe	 1 (16.6667 %)
  low-mild	 1 (16.6667 %)
  Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
-#+end_src+
+#+end_src
 
 At 12.35x, unboxed numerics and faster keyword access help a bit, but they
 aren't the choke point. We are still allocating though, so building the tree is
@@ -646,7 +647,7 @@ volatile for perhaps a little gain:
  Execution time lower quantile : 2.580740 µs ( 2.5%)
  Execution time upper quantile : 2.737338 µs (97.5%)
  Overhead used : 1.804565 ns
-#+end_src+
+#+end_src
 
 So that leaves 2.96x; using a custom type and a volatile as a mutable
 counter gets us much closer.  One difference with the java implementation
@@ -682,7 +683,7 @@ an array:
  Execution time lower quantile : 1.116454 µs ( 2.5%)
  Execution time upper quantile : 1.222972 µs (97.5%)
  Overhead used : 1.804565 ns
-#+end_src+
+#+end_src
 
 That leaves us with 1.27x, and like the java version, we use a mutable int array
 as a counter to save time on boxing with the volatile.  There are perhaps more
@@ -697,7 +698,7 @@ first search. The breadth first search was implemented iteratively in both
 languages.In Java the binary tree was represented by a custom class while in
 Clojure theywere represented using nested persistent maps."
 
-#+begin_src+ java
+#+begin_src java
  public boolean binaryTreeBFS(BinaryTreeNode root, int target)
    {Queue<BinaryTreeNode >queue= new LinkedList <BinaryTreeNode>() ;
     queue.add(root) ;
@@ -715,14 +716,13 @@ Clojure theywere represented using nested persistent maps."
   counter[0] = 0;
   return binaryTreeBFS(createBinaryTree(depth,counter),target);
   }
-#+end_src+ 
+#+end_src 
 
 Here we are comparing a java implementation - based on a mutable
 queue (based on a doubly linked list) for the search fringe - 
 against a clojure implementation that uses a persistent queue.
 
 #+begin_src clojure
-
  performancepaper.core> (c/quick-bench (bench.core/binaryTreeBFSTest 7 126))
  Evaluation count : 465144 in 6 samples of 77524 calls.
  Execution time mean : 1.325622 µs
@@ -761,14 +761,14 @@ against a clojure implementation that uses a persistent queue.
  low-severe	 1 (16.6667 %)
  Variance from outliers : 31.1481 % Variance is moderately inflated by outliers
 
-#+end_src+
+#+end_src
 
 As expected, the map-based, persistent queued clojure implementation is 20.8x
 slower than the java implementation that stores information in plain classes and
 uses a mutable queue.  Let's apply the lessons from BFS and use 
 our ~deftype~ based nodes to build the tree, then search it:
 
-#+begin_src+ clojure
+#+begin_src clojure
 (defn binary-tree-BFS-test2 [depth tgt]
   (binary-tree-BFS (create-binary-tree4 depth (doto (int-array 1) (aset 0 0))) 126))
 
@@ -779,7 +779,7 @@ our ~deftype~ based nodes to build the tree, then search it:
  Execution time lower quantile : 1.193429 µs ( 2.5%)
  Execution time upper quantile : 1.257014 µs (97.5%)
  Overhead used : 1.804565 ns
-#+end_src+
+#+end_src
 
 We end up at 0.89x, which is surprisingly a bit faster.  I would
 naively expect mutable implementaions to have a 2-4x edge in most
