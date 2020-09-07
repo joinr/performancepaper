@@ -118,16 +118,14 @@ clojure compiler optimizes this to a loop:
   (if (> cnt 0)
   (recur (dec cnt))))
 
-Evaluation count : 60482070 in 6 samples of 10080345 calls.
-             Execution time mean : 8.254094 ns
-    Execution time std-deviation : 0.362106 ns
-   Execution time lower quantile : 7.547853 ns ( 2.5%)
-   Execution time upper quantile : 8.492824 ns (97.5%)
-                   Overhead used : 1.804565 ns
-
-Found 1 outliers in 6 samples (16.6667 %)
-	low-severe	 1 (16.6667 %)
- Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
+ performancepaper.core> (c/quick-bench (pure-recursion4 10))
+ Evaluation count : 68567172 in 6 samples of 11427862 calls.
+ Execution time mean : 6.972233 ns
+ Execution time std-deviation : 0.059662 ns
+ Execution time lower quantile : 6.887818 ns ( 2.5%)
+ Execution time upper quantile : 7.030860 ns (97.5%)
+ Overhead used : 1.797578 ns
+ nil
 #+end_src
 
 We are now 0.697x of the original java runtime, so faster. We're also somewhat
