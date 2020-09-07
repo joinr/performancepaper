@@ -87,7 +87,7 @@ by using unchecked math and a type hint ( ~with-unchecked~ has the effect of
 setting ~*unchecked-math*~ to true for the scope of the body, then reverting to
 ~false~ after evaluation).
 
-#+begin_source clojure
+#+begin_source+ clojure
 1.5x
 (with-unchecked
   (defn pure-recursion2 [^long cnt]
