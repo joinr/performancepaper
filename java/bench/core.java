@@ -145,7 +145,7 @@ public static BinaryTreeNode createBinaryTree (int depth, int[] counter)
 
 public static boolean binaryTreeDFSTest(int depth, int target)
  {
-     int[] counter = new int[0];
+     int[] counter = new int[1];
      counter[0] = 0;
      return binaryTreeDFS(createBinaryTree(depth,counter),target);
   }
@@ -185,7 +185,7 @@ public static boolean binaryTreeBFS(BinaryTreeNode root, int target)
 
 public static boolean binaryTreeBFSTest(int depth, int target)
 {
-    int[] counter = new int[0];
+    int[] counter = new int[1];
     counter[0] = 0;
     return binaryTreeBFS(createBinaryTree(depth,counter),target);
     }

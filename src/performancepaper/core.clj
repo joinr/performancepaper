@@ -9,7 +9,8 @@
        (set! *unchecked-math* false)
        nil))
 
-;; The idea behind this approach was that seeing the way the languages perform in
+;;Quoted from paper:
+;; "The idea behind this approach was that seeing the way the languages perform in
 ;; common fundamental tasks wouldgive the reader an idea of how the languages will
 ;; perform in their application.The reason that the fundamental areas selected were
 ;; separated into their ownexperiments rather than putting them all into the same
@@ -19,18 +20,18 @@
 ;;The Java version that was used to execute both the Clojure and the Java
 ;;codewas 1.8.0_60. The JVM was run with the arguments –Xmx11g and -Xss11gto
 ;;increase the max heap and stack space to 11 gigabytes when needed forthe
-;;experiments.
+;;experiments.""
 
 ;; 3.1
 
-;; The recursion experiment consisted of a number of recursion calls with only
+;; "The recursion experiment consisted of a number of recursion calls with only
 ;; acounter as a parameter and a simple exit condition. It was designed to test
 ;; theperformance of function calls in the two languages. The counter was a
 ;; prim-itive integer in both languages and was decreased by one for each
-;; recursivecall.
+;; recursivecall."
 
 ;;Executiontimes were measured for problem sizes of 2000, 20000, 200000, 2000000
-;;and 20000000,
+;;and 20000000,""
 
 ;;3.1 Pure Recursion
 
@@ -112,14 +113,14 @@
 
 ;;3.2
 
-;; The sorting experiment consisted of sorting a collection of integers. In Clojure
+;; "The sorting experiment consisted of sorting a collection of integers. In Clojure
 ;; this was done by sorting alistof integers, shuffled by theshufflefunc-tion,
 ;; using thesortfunction, all of which are included in theclojure.corelibrary. In
 ;; Java this was done similarly by sorting an array of primitive in-tegers, which
 ;; was shuffled usingjava.util.Collections.shuffle, using theAr-rays.sortfunction.
 
  ;;Execution times were measured for collec-tions with 2000, 20000, 200000,
- ;;2000000 and 20000000 integers.
+ ;;2000000 and 20000000 integers."
 
 ;; private  int[]  createArray (int  size)
 ;; {int  counter  =  Integer.MIN_VALUE;
@@ -214,12 +215,12 @@
 
 ;;3.3 Map Creation
 
-;; The map creation experiment consisted of adding integers as keys and valuesto a
+;;"The map creation experiment consisted of adding integers as keys and valuesto a
 ;; map. In Java they were added to aHashMapfrom thejava.util library, andin Clojure
 ;; they were added to the built-inpersistent mapdata structure.
 
 ;;Execution times were measured for20000, 63246, 200000, 632456 and 2000000
-;;different key-value pairs.
+;;different key-value pairs."
 
 ;; private  HashMap<Integer ,  Integer> createMap (int  sze)
 ;; {HashMap<Integer ,  Integer> retMap= new HashMap<Integer , Integer>(sze) ;
@@ -409,14 +410,21 @@
 ;;Added by joinr
 ;; public boolean binaryTreeDFSTest(int depth, int target)
 ;; {
-;;  int[] counter = new int[0];
+;;  int[] counter = new int[1];
 ;;  counter[0] = 0;
 ;;  return binaryTreeBFS(createBinaryTree(depth,counter),target);
 ;;  }
 
-(c/quick-becnh (bench.core/binaryTreeDFSTest 7 128))
+;; performancepaper.core> (c/quick-bench (bench.core/binaryTreeDFSTest 7 126))
 
-(defn create−binary−tree [depth counter−atom]
+;; Evaluation count : 643680 in 6 samples of 107280 calls.
+;; Execution time mean : 900.028340 ns
+;; Execution time std-deviation : 25.156556 ns
+;; Execution time lower quantile : 873.937425 ns ( 2.5%)
+;; Execution time upper quantile : 927.532690 ns (97.5%)
+;; Overhead used : 1.804565 ns
+
+(defn create-binary-tree [depth counter−atom]
   (when (> depth  0)
     (let  [val  @counter−atom]
       (swap! counter−atom  inc )
@@ -424,14 +432,111 @@
        :left  (create−binary−tree  (- depth  1) counter−atom )
        :right (create−binary−tree  (- depth  1) counter−atom )})))
 
-(defn binary−tree−DFS [root  target]
+(defn binary-tree-DFS [root target]
   (if  (nil?  root)
     false
-    (or (=  (:value  root)  target)
-        (binary−tree−DFS  (:left  root)  target)
-        (binary−tree−DFS  (:right root)  target))))
+    (or (=  (:value  root) target)
+        (binary-tree-DFS (:left  root) target)
+        (binary-tree-DFS (:right root) target))))
 
-(defrecord binary-node [^int value left right])
+;;12x
+(defn binary-tree-DFS-test [depth target]
+  (binary-tree-DFS (create-binary-tree depth (atom 0)) 126))
+
+;; Evaluation count : 46068 in 6 samples of 7678 calls.
+;; Execution time mean : 12.656700 µs
+;; Execution time std-deviation : 244.046759 ns
+;; Execution time lower quantile : 12.465987 µs ( 2.5%)
+;; Execution time upper quantile : 13.059028 µs (97.5%)
+;; Overhead used : 1.804565 ns
+
+(with-unchecked
+  (defn create-binary-tree2 [^long depth  counter-atom]
+    (when (> depth  0)
+      (let  [val  @counter-atom]
+        (swap! counter-atom inc)
+        {:value val
+         :left  (create−binary−tree  (- depth  1) counter-atom)
+         :right (create−binary−tree  (- depth  1) counter-atom)}))))
+
+(defn binary-tree-DFS2 [root ^long target]
+  (if  (nil?  root)
+    false
+    (or (=  (root :value) target)
+        (binary-tree-DFS2 (root :left) target)
+        (binary-tree-DFS2(root :right) target))))
+
+;;12x
+(defn binary-tree-DFS-test2 [depth target]
+  (binary-tree-DFS2 (create-binary-tree2 depth (atom 0)) 126))
+
+;; Evaluation count : 54552 in 6 samples of 9092 calls.
+;; Execution time mean : 11.121393 µs
+;; Execution time std-deviation : 168.460662 ns
+;; Execution time lower quantile : 10.878002 µs ( 2.5%)
+;; Execution time upper quantile : 11.307488 µs (97.5%)
+;; Overhead used : 1.804565 ns
+
+;; Found 2 outliers in 6 samples (33.3333 %)
+;; low-severe	 1 (16.6667 %)
+;; low-mild	 1 (16.6667 %)
+;; Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
+
+(deftype binary-node [^int value left right])
+
+(with-unchecked
+  (defn create-binary-tree3 [^long depth  counter-atom]
+    (when (> depth  0)
+      (let  [^long val  @counter-atom]
+        (vreset! counter-atom (inc val))
+        (binary-node.  val
+                       (create-binary-tree3  (- depth  1) counter-atom)
+                       (create-binary-tree3  (- depth  1) counter-atom))))))
+
+(defn binary-tree-DFS3 [^binary-node root ^long target]
+  (if  (nil?  root)
+    false
+    (or (==  (.value root) target)
+        (binary-tree-DFS3 (.left root) target)
+        (binary-tree-DFS3 (.right root) target))))
+
+;;2.66x
+(defn binary-tree-DFS-test3 [depth target]
+  (binary-tree-DFS3 (create-binary-tree3 depth (volatile! 0)) 126))
+;; Evaluation count : 222192 in 6 samples of 37032 calls.
+;; Execution time mean : 2.665373 µs
+;; Execution time std-deviation : 69.489473 ns
+;; Execution time lower quantile : 2.580740 µs ( 2.5%)
+;; Execution time upper quantile : 2.737338 µs (97.5%)
+;; Overhead used : 1.804565 ns
+
+
+(with-unchecked
+  (defn create-binary-tree4 [^long depth  ^ints counter]
+    (when (> depth  0)
+      (let  [val  (aget counter 0)]
+        (aset counter 0 (inc val))
+        (binary-node.  val
+                       (create-binary-tree4  (- depth  1) counter)
+                       (create-binary-tree4  (- depth  1) counter))))))
+
+(defn binary-tree-DFS4 [^binary-node root ^long target]
+  (if root
+    (or (==  (.value root) target)
+        (binary-tree-DFS4 (.left root) target)
+        (binary-tree-DFS4 (.right root) target))
+    false))
+
+;;1.27x
+(defn binary-tree-DFS-test4 [depth target]
+  (binary-tree-DFS4 (create-binary-tree4 depth (doto (int-array 1) (aset 0 1))) 126))
+
+;; Evaluation count : 524934 in 6 samples of 87489 calls.
+;; Execution time mean : 1.158351 µs
+;; Execution time std-deviation : 46.874432 ns
+;; Execution time lower quantile : 1.116454 µs ( 2.5%)
+;; Execution time upper quantile : 1.222972 µs (97.5%)
+;; Overhead used : 1.804565 ns
 
 ;;3.6 Binary Tree BFS
 
@@ -454,22 +559,46 @@
 ;;Added by joinr
 ;; public boolean binaryTreeBFSTest(int depth, int target)
 ;; {
-;;  int[] counter = new int[0];
+;;  int[] counter = new int[1];
 ;;  counter[0] = 0;
 ;;  return binaryTreeBFS(createBinaryTree(depth,counter),target);
 ;;  }
 
-(defn binary−tree−BFS [root target]
+;;Not sure why we're getting clipped here...Java mutable linked list
+;;queue should be faster out of the box, but who knows. Results are
+;;identical, so looks consistent!
+
+;; performancepaper.core> (c/quick-bench (bench.core/binaryTreeBFSTest 7 126))
+;; Evaluation count : 465144 in 6 samples of 77524 calls.
+;; Execution time mean : 1.325622 µs
+;; Execution time std-deviation : 31.643248 ns
+;; Execution time lower quantile : 1.301545 µs ( 2.5%)
+;; Execution time upper quantile : 1.376586 µs (97.5%)
+;; Overhead used : 1.804565 ns
+
+(defn binary-tree-BFS [root target]
   (loop [queue (conj clojure.lang.PersistentQueue/EMPTY root)]
     (if (empty? queue)
       false
       (let [item (peek queue)]
         (if (= target (:value item))
           true
-          (recur (as−> (pop queue) $
+          (recur (as-> (pop queue) $
                        (if (nil?  (:left item))
                          $
                          (conj $ (:left item)))
                        (if (nil? (:right item))
                          $
                          (conj $ (:right item))))))))))
+
+;;way faster for some reason...
+;;1300x faster...ugh.
+(defn binary-tree-bfs-test [depth tgt]
+    (binary-tree-BFS (create-binary-tree depth (atom 0)) 126))
+
+;; Evaluation count : 104839092 in 6 samples of 17473182 calls.
+;; Execution time mean : 3.886752 ns
+;; Execution time std-deviation : 0.126441 ns
+;; Execution time lower quantile : 3.758023 ns ( 2.5%)
+;; Execution time upper quantile : 4.021697 ns (97.5%)
+;; Overhead used : 1.804565 ns
