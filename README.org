@@ -3,7 +3,7 @@
 
 * Introduction 
 
-The author sought to establish a microbenchmark comparison between simple java
+The author ( [[https://www.diva-portal.org/smash/get/diva2:1424342/FULLTEXT01.pdf][full paper]] ) sought to establish a microbenchmark comparison between simple java
 programs and their implementatiosn in Clojure.  From there, a sample-based
 performance profiling methodology was applied to allow for JIT warm up and
 establish well founded statistical measures of each implementation.  Per the
