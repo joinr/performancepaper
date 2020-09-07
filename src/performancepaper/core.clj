@@ -163,19 +163,19 @@
 
 ;; (sort  list)
 
-;;4.9x, slower
+;;7.99 ~ 8x, slower
 (defn create-sorted-array [n]
   (->>   (range Integer/MIN_VALUE 0 1)
          (take n)
-         (Collections/shuffle)
+         shuffle
          sort))
 
 ;; performancepaper.core> (c/quick-bench (create-sorted-array 100))
-;; Evaluation count : 27840 in 6 samples of 4640 calls.
-;; Execution time mean : 21.769395 µs
-;; Execution time std-deviation : 260.614400 ns
-;; Execution time lower quantile : 21.259014 µs ( 2.5%)
-;; Execution time upper quantile : 21.959346 µs (97.5%)
+;; Evaluation count : 17532 in 6 samples of 2922 calls.
+;; Execution time mean : 34.841374 µs
+;; Execution time std-deviation : 549.515702 ns
+;; Execution time lower quantile : 34.210927 µs ( 2.5%)
+;; Execution time upper quantile : 35.646224 µs (97.5%)
 ;; Overhead used : 1.804565 ns
 
 ;; Found 1 outliers in 6 samples (16.6667 %)

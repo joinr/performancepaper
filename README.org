@@ -46,7 +46,7 @@ nullify the effects of different hardware.
  "The recursion experiment consisted of a number of recursion calls with only
  acounter as a parameter and a simple exit condition. It was designed to test
  theperformance of function calls in the two languages. The counter was a
- prim-itive integer in both languages and was decreased by one for each
+ primitive integer in both languages and was decreased by one for each
  recursivecall."
 
 Executiontimes were measured for problem sizes of 2000, 20000, 200000, 2000000
@@ -134,10 +134,10 @@ opinion) is fair game to avoid function call overhead, which java can't do.
 * 3.2 Sorting
 
  "The sorting experiment consisted of sorting a collection of integers. In Clojure
- this was done by sorting alistof integers, shuffled by theshufflefunc-tion,
- using thesortfunction, all of which are included in theclojure.corelibrary. In
+ this was done by sorting alistof integers, shuffled by the shuffle function,
+ using the sort function, all of which are included in the clojure.core library. In
  Java this was done similarly by sorting an array of primitive in-tegers, which
- was shuffled usingjava.util.Collections.shuffle, using theAr-rays.sortfunction.
+ was shuffled using java.util.Collections.shuffle, using the Arrays.sort function.
 
  Execution times were measured for collec-tions with 2000, 20000, 200000,
  2000000 and 20000000 integers."
@@ -184,23 +184,26 @@ implementation:
 (defn create-sorted-array [n]
   (->>   (range Integer/MIN_VALUE 0 1)
          (take n)
-         (Collections/shuffle)
+         shuffle
          sort))
 
- performancepaper.core> (c/quick-bench (create-sorted-array 100))
- Evaluation count : 27840 in 6 samples of 4640 calls.
- Execution time mean : 21.769395 µs
- Execution time std-deviation : 260.614400 ns
- Execution time lower quantile : 21.259014 µs ( 2.5%)
- Execution time upper quantile : 21.959346 µs (97.5%)
- Overhead used : 1.804565 ns
+performancepaper.core> (c/quick-bench (create-sorted-array 100))
+Evaluation count : 17532 in 6 samples of 2922 calls.
+Execution time mean : 34.841374 µs
+Execution time std-deviation : 549.515702 ns
+Execution time lower quantile : 34.210927 µs ( 2.5%)
+Execution time upper quantile : 35.646224 µs (97.5%)
+Overhead used : 1.804565 ns
 
- Found 1 outliers in 6 samples (16.6667 %)
- low-severe	 1 (16.6667 %)
- Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
+Found 1 outliers in 6 samples (16.6667 %)
+low-severe	 1 (16.6667 %)
+Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
 #+end_src 
-As a starting point, we are roughly 4.9x slower than the java implementation.
-We can improve this to 3x and stay within Clojure idioms though:
+As a starting point, we are roughly 8x slower than the java implementation.
+We can improve this to 3x and stay within Clojure idioms though.  One thing 
+to target is to avoid creating copies of stuff; since we are producing 
+a sorted array using an intermediate ArrayList, we can bypass clojure.core/shuffle
+since it creates an intermediate clojure vector we don't need:
 
 #+begin_src clojure
 (defn create-sorted-array2 [^long n]
