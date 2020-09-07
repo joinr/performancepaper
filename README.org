@@ -88,7 +88,6 @@ setting ~*unchecked-math*~ to true for the scope of the body, then reverting to
 ~false~ after evaluation).
 
 #+begin_source+ clojure
-1.5x
 (with-unchecked
   (defn pure-recursion2 [^long cnt]
     (if  (pos?   cnt)
@@ -102,6 +101,8 @@ setting ~*unchecked-math*~ to true for the scope of the body, then reverting to
  Execution time upper quantile : 15.907675 ns (97.5%)
  Overhead used : 1.804565 ns
 #+end_src+
+
+That gets us to within 1.5x.
 
 We can still do better, although it may be argued over whether
 going this route deviates from the author's original intent.
