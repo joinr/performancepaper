@@ -1,4 +1,5 @@
 (ns performancepaper.core
+  (:require [criterium.core :as c])
   (:import bench.core))
 
 ;; The idea behind this approach was thatseeing the way the languages perform in
@@ -28,13 +29,13 @@
 
 ;; private void Recurse(int cnt)
 ;; {if (cnt > 0)
-;;  Recurse (cnt − 1);}
+;;  Recurse (cnt - 1);}
 
 
 (defn  pure−recursion [cnt]
   (if  (>  cnt  0)
     (pure−recursion
-     (− cnt  1))))
+     (- cnt  1))))
 
 ;;3.2
 
@@ -88,7 +89,7 @@
   (loop [map  (transient  {}),
          i    (int size)]
     (if  (>  i  0)
-      (recur  (assoc! map i  (+ i 1))  (− i  1) )
+      (recur  (assoc! map i  (+ i 1))  (- i  1) )
       (persistent!  map))))
 
 ;;3.4 Object Creation
@@ -119,7 +120,7 @@
          i (int  count)]
     (if  (=  0  i )
       last
-      (recur  {:next  last} (− i  1)))))
+      (recur  {:next  last} (- i  1)))))
 
 ;;3.5 Binary Tree DFS
 
@@ -134,8 +135,8 @@
 ;; {if (depth == 0) return null;
 ;;  int value = counter[0]++;
 ;;  BinaryTreeNode btn = new BinaryTreeNode(value);
-;;  btn.left = createBinaryTree(depth − 1, counter) ;
-;;  btn.right = createBinaryTree(depth − 1 , counter) ;
+;;  btn.left = createBinaryTree(depth - 1, counter) ;
+;;  btn.right = createBinaryTree(depth - 1 , counter) ;
 ;;  return  btn ;}
 
 ;;  public boolean binaryTreeDFS(BinaryTreeNode root, int target)
@@ -150,8 +151,8 @@
     (let  [val  @counter−atom]
       (swap! counter−atom  inc )
       {:value val
-       :left  (create−binary−tree  (− depth  1) counter−atom )
-       :right (create−binary−tree  (− depth  1) counter−atom )})))
+       :left  (create−binary−tree  (- depth  1) counter−atom )
+       :right (create−binary−tree  (- depth  1) counter−atom )})))
 
 (defn binary−tree−DFS [root  target]
   (if  (nil?  root)
