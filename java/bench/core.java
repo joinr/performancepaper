@@ -5,6 +5,8 @@ import java.util.Queue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import bench.LLNode;
+import bench.BinaryTreeNode;
 
 public class core {
 // The idea behind this approach was thatseeing the way the languages perform in
@@ -32,7 +34,7 @@ public class core {
 
 //3.1 Pure Recursion
 
-public void Recurse(int cnt)
+public static void Recurse(int cnt)
 {if (cnt > 0)
  Recurse (cnt - 1);}
 
@@ -54,7 +56,7 @@ public void Recurse(int cnt)
  //Execution times were measured for collec-tions with 2000, 20000, 200000,
  //2000000 and 20000000 integers.
 
-public  int[]  createArray (int  size)
+public static  int[]  createArray (int  size)
 {int  counter  =  Integer.MIN_VALUE;
  ArrayList <Integer>  arrList= new  ArrayList <Integer>(size) ;
  for(int i = 0; i < size ; ++ i)
@@ -81,7 +83,7 @@ public  int[]  createArray (int  size)
 //Execution times were measured for20000, 63246, 200000, 632456 and 2000000
 //different key-value pairs.
 
-public  HashMap<Integer ,  Integer> createMap (int  sze)
+public static  HashMap<Integer ,  Integer> createMap (int  sze)
 {HashMap<Integer ,  Integer> retMap= new HashMap<Integer , Integer>(sze) ;
  for (int i = 0; i < sze ;)
     retMap.put(i , ++ i ) ;
@@ -105,14 +107,8 @@ public  HashMap<Integer ,  Integer> createMap (int  sze)
 // Execution times were measured for 100000, 316228, 1000000, 3162278and 10000000
 // linked objects
 
-public  class  LLNode{
- public  LLNode  next ;
- public  LLNode (LLNode next){
- this.next  =  next ;}
-}
-
 //
-public LLNode createObjects (int count )
+public static LLNode createObjects (int count )
 {LLNode last = null ;
  for (int i = 0; i < count; ++ i)
           last = new LLNode(last) ;
@@ -133,19 +129,7 @@ public LLNode createObjects (int count )
 // representedby a custom class while in Clojure they were represented using nested
 // persistent maps.
 
-
-//BinaryTreeNode not provided by the author....
-//joinr's interpretation of BinaryTreeNode
-public class BinaryTreeNode{
-    public int value;
-    public BinaryTreeNode left;
-    public BinaryTreeNode right;
-    public BinaryTreeNode(int v){
-        value = v;
-    }
-}
-
-public BinaryTreeNode createBinaryTree (int depth, int[] counter)
+public static BinaryTreeNode createBinaryTree (int depth, int[] counter)
 {if (depth == 0) return null;
  int value = counter[0]++;
  BinaryTreeNode btn = new BinaryTreeNode(value);
@@ -182,7 +166,7 @@ public BinaryTreeNode createBinaryTree (int depth, int[] counter)
 //languages.In Java the binary tree was represented by a custom class while in
 //Clojure theywere represented using nested persistent maps.
 
-public boolean binaryTreeBFS(BinaryTreeNode root, int target)
+public static boolean binaryTreeBFS(BinaryTreeNode root, int target)
   {Queue<BinaryTreeNode >queue= new LinkedList <BinaryTreeNode>() ;
    queue.add(root) ;
    while (! queue.isEmpty())
