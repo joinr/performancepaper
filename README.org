@@ -92,8 +92,7 @@ setting ~*unchecked-math*~ to true for the scope of the body, then reverting to
 (with-unchecked
   (defn pure-recursion2 [^long cnt]
     (if  (pos?   cnt)
-      (pure-recursion2  (dec  cnt))))
-  )
+      (pure-recursion2  (dec  cnt)))))
 
  Evaluation count : 34678608 in 6 samples of 5779768 calls.
  Execution time mean : 15.723221 ns
