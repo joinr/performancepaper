@@ -47,24 +47,33 @@
 ;; Execution time upper quantile : 10.309200 ns (97.5%)
 ;; Overhead used : 1.797578 ns
 
+;;21x slower
 (defn pure-recursion [cnt]
   (if  (>  cnt  0)
     (pure-recursion 
      (- cnt  1))))
 
 ;; performancepaper.core> (c/quick-bench (pure-recursion 10))
-;; Evaluation count : 5648448 in 6 samples of 941408 calls.
-;; Execution time mean : 108.779894 ns
-;; Execution time std-deviation : 3.259179 ns
-;; Execution time lower quantile : 105.783939 ns ( 2.5%)
-;; Execution time upper quantile : 113.458706 ns (97.5%)
-;; Overhead used : 1.797578 ns
+;; Evaluation count : 2776386 in 6 samples of 462731 calls.
+;; Execution time mean : 217.748915 ns
+;; Execution time std-deviation : 3.708932 ns
+;; Execution time lower quantile : 213.224904 ns ( 2.5%)
+;; Execution time upper quantile : 221.431481 ns (97.5%)
+;; Overhead used : 1.804565 ns
 
+;;1.5x
 (with-unchecked
   (defn pure-recursion2 [^long cnt]
     (if  (pos?   cnt)
-      (pure-recursion  (dec  cnt))))
+      (pure-recursion2  (dec  cnt))))
   )
+
+;; Evaluation count : 34678608 in 6 samples of 5779768 calls.
+;; Execution time mean : 15.723221 ns
+;; Execution time std-deviation : 0.156759 ns
+;; Execution time lower quantile : 15.545890 ns ( 2.5%)
+;; Execution time upper quantile : 15.907675 ns (97.5%)
+;; Overhead used : 1.804565 ns
 
 (defn pure-recursion3 [cnt]
   (if (> cnt 0)
@@ -80,6 +89,9 @@
 
 ;;faster than java.
 
+;;0.697x, faster.  We're also somewhat cheating at the
+;;machine level, but at the language level, "recur" is fair
+;;game to avoid function call overhead, which java can't do.
 (defn pure-recursion4 [^long cnt]
   (if (> cnt 0)
     (recur (dec cnt))))
@@ -151,19 +163,24 @@
 
 ;; (sort  list)
 
-;;9x
+;;4.9x, slower
 (defn create-sorted-array [n]
   (->>   (range Integer/MIN_VALUE 0 1)
          (take n)
-         (java.util.collections/shuffle)
+         (Collections/shuffle)
          sort))
 
-;; Evaluation count : 17322 in 6 samples of 2887 calls.
-;; Execution time mean : 36.425740 µs
-;; Execution time std-deviation : 1.031385 µs
-;; Execution time lower quantile : 35.312439 µs ( 2.5%)
-;; Execution time upper quantile : 37.844605 µs (97.5%)
-;; Overhead used : 1.797578 ns
+;; performancepaper.core> (c/quick-bench (create-sorted-array 100))
+;; Evaluation count : 27840 in 6 samples of 4640 calls.
+;; Execution time mean : 21.769395 µs
+;; Execution time std-deviation : 260.614400 ns
+;; Execution time lower quantile : 21.259014 µs ( 2.5%)
+;; Execution time upper quantile : 21.959346 µs (97.5%)
+;; Overhead used : 1.804565 ns
+
+;; Found 1 outliers in 6 samples (16.6667 %)
+;; low-severe	 1 (16.6667 %)
+;; Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
 
 ;;3x
 (defn create-sorted-array2 [^long n]
@@ -188,6 +205,7 @@
 ;; Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
 ;; nil
 
+;;1.07x, slightly slower but meh.
 (with-unchecked
   (defn create-sorted-array3 [^long size]
     (let [^ArrayList alist
@@ -250,6 +268,7 @@
 ;; Execution time upper quantile : 9.964194 µs (97.5%)
 ;; Overhead used : 1.800162 ns
 
+;;not much change, still around 9x slower.
 (with-unchecked
   (defn create-map2 [size]
     (loop [^clojure.lang.ITransientAssociative
@@ -259,19 +278,29 @@
         (recur  (.assoc map i  (+ i 1))
                 (- i  1))
         (persistent!  map)))))
+;; performancepaper.core> (c/quick-bench (create-map2 100))
+;; Evaluation count : 61260 in 6 samples of 10210 calls.
+;; Execution time mean : 9.576160 µs
+;; Execution time std-deviation : 147.638187 ns
+;; Execution time lower quantile : 9.392887 µs ( 2.5%)
+;; Execution time upper quantile : 9.723504 µs (97.5%)
+;; Overhead used : 1.804565 ns
 
+
+;;1.04x, slower but meh.
 (with-unchecked
   (defn create-map3 [^ long size]
     (let [^java.util.HashMap map  (java.util.HashMap. size)]
       (dotimes [i size]
         (.put map i  (+ i 1))))))
 
-;; Evaluation count : 450894 in 6 samples of 75149 calls.
-;; Execution time mean : 1.338286 µs
-;; Execution time std-deviation : 27.816513 ns
-;; Execution time lower quantile : 1.304915 µs ( 2.5%)
-;; Execution time upper quantile : 1.372651 µs (97.5%)
-;; Overhead used : 1.800162 ns
+;; performancepaper.core> (c/quick-bench (create-map3 100))
+;; Evaluation count : 487116 in 6 samples of 81186 calls.
+;; Execution time mean : 1.229078 µs
+;; Execution time std-deviation : 30.572826 ns
+;; Execution time lower quantile : 1.191533 µs ( 2.5%)
+;; Execution time upper quantile : 1.268660 µs (97.5%)
+;; Overhead used : 1.804565 ns
 
 
 ;;3.4 Object Creation
@@ -305,7 +334,8 @@
 ;; Execution time upper quantile : 254.444188 ns (97.5%)
 ;; Overhead used : 1.800162 ns
 
-(defn create-objects[count]
+;;2.7x, slower
+(defn create-objects [count]
   (loop [last nil
          i (int  count)]
     (if  (=  0  i )
@@ -319,6 +349,9 @@
 ;; Execution time upper quantile : 701.464334 ns (97.5%)
 ;; Overhead used : 1.800162 ns
 
+;;as expected, marginal improvements.  Allocations
+;;are hurting us here, as well as array-map instantation.
+;;We're on a slow path compared to java.
 (with-unchecked
   (defn create-objects2 [count]
     (loop [last nil
@@ -339,6 +372,8 @@
 ;;much faster to create when you have fixed fields, like
 ;;the node class.
 (defrecord ll-node [next])
+
+;;1.39x, slower but getting close.
 (defn create-objects3 [count]
   (loop [last nil
          i (int  count)]
@@ -358,6 +393,8 @@
 ;; Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
 
 ;;revisit
+;;checked comparisons don't buy us anything, can we get allocation
+;;faster?
 (with-unchecked
   (defn create-objects4 [^long count]
     (loop [last nil
@@ -370,6 +407,7 @@
 ;;types have less to setup, very barebones like the node class.
 (deftype ll-node-type [next])
 
+;;~1x, pretty much identical to java now
 (with-unchecked
   (defn create-objects5 [^long count]
     (loop [last nil
@@ -439,7 +477,8 @@
         (binary-tree-DFS (:left  root) target)
         (binary-tree-DFS (:right root) target))))
 
-;;12x
+;;14x, we got keyword access, map allocation, recursion, and using atom as a
+;;mutable counter, boxed numeric comparisons...lots of room to improve.
 (defn binary-tree-DFS-test [depth target]
   (binary-tree-DFS (create-binary-tree depth (atom 0)) 126))
 
@@ -462,11 +501,13 @@
 (defn binary-tree-DFS2 [root ^long target]
   (if  (nil?  root)
     false
-    (or (=  (root :value) target)
+    (or (==  (root :value) target)
         (binary-tree-DFS2 (root :left) target)
-        (binary-tree-DFS2(root :right) target))))
+        (binary-tree-DFS2 (root :right) target))))
 
-;;12x
+;;12.35x, unboxed numerics and faster keyword access help a bit
+;;We are still allocating though, so building the tree is
+;;probably the slow point.
 (defn binary-tree-DFS-test2 [depth target]
   (binary-tree-DFS2 (create-binary-tree2 depth (atom 0)) 126))
 
@@ -482,6 +523,7 @@
 ;; low-mild	 1 (16.6667 %)
 ;; Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
 
+;;as before, we know that types are barebones classes.
 (deftype binary-node [^int value left right])
 
 (with-unchecked
@@ -500,7 +542,8 @@
         (binary-tree-DFS3 (.left root) target)
         (binary-tree-DFS3 (.right root) target))))
 
-;;2.66x
+;;2.96x, using a custom type and a volatile as a mutable
+;;counter gets us closer.
 (defn binary-tree-DFS-test3 [depth target]
   (binary-tree-DFS3 (create-binary-tree3 depth (volatile! 0)) 126))
 ;; Evaluation count : 222192 in 6 samples of 37032 calls.
@@ -527,7 +570,8 @@
         (binary-tree-DFS4 (.right root) target))
     false))
 
-;;1.27x
+;;1.27x, like the java version, using a mutable int array as a counter
+;;saves time on boxing with the volatile, gets us closer.
 (defn binary-tree-DFS-test4 [depth target]
   (binary-tree-DFS4 (create-binary-tree4 depth (doto (int-array 1) (aset 0 1))) 126))
 
@@ -592,13 +636,31 @@
                          (conj $ (:right item))))))))))
 
 ;;way faster for some reason...
-;;1300x faster...ugh.
-(defn binary-tree-bfs-test [depth tgt]
+;;20.8x slower using a persistent queue and original map-based
+;;nodes.
+(defn binary-tree-BFS-test [depth tgt]
     (binary-tree-BFS (create-binary-tree depth (atom 0)) 126))
 
-;; Evaluation count : 104839092 in 6 samples of 17473182 calls.
-;; Execution time mean : 3.886752 ns
-;; Execution time std-deviation : 0.126441 ns
-;; Execution time lower quantile : 3.758023 ns ( 2.5%)
-;; Execution time upper quantile : 4.021697 ns (97.5%)
+;; performancepaper.core> (c/quick-bench (binary-tree-BFS-test 7 126))
+;; Evaluation count : 23448 in 6 samples of 3908 calls.
+;; Execution time mean : 27.534318 µs
+;; Execution time std-deviation : 3.168409 µs
+;; Execution time lower quantile : 25.831461 µs ( 2.5%)
+;; Execution time upper quantile : 32.973576 µs (97.5%)
+;; Overhead used : 1.804565 ns
+
+;; Found 1 outliers in 6 samples (16.6667 %)
+;; low-severe	 1 (16.6667 %)
+;; Variance from outliers : 31.1481 % Variance is moderately inflated by outliers
+
+;;0.89x, a bit faster surprisingly.
+(defn binary-tree-BFS-test2 [depth tgt]
+  (binary-tree-BFS (create-binary-tree4 depth (doto (int-array 1) (aset 0 0))) 126))
+
+;; performancepaper.core> (c/quick-bench (binary-tree-BFS-test2 7 126))
+;; Evaluation count : 509616 in 6 samples of 84936 calls.
+;; Execution time mean : 1.221056 µs
+;; Execution time std-deviation : 28.469631 ns
+;; Execution time lower quantile : 1.193429 µs ( 2.5%)
+;; Execution time upper quantile : 1.257014 µs (97.5%)
 ;; Overhead used : 1.804565 ns
