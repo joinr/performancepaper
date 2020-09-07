@@ -108,7 +108,7 @@ going this route deviates from the author's original intent.
 Since the original intent was to measure function call overhead,
 we can actually leverage a language feature that clojure provides
 to eliminate that overhead completely.  Where there was naive recursion
-in the original, we can just use the `recur` form to semantically 
+in the original, we can just use the ~recur~ form to semantically 
 re-enter the fuction with new arguments, while operationally the
 clojure compiler optimizes this to a loop:
 
@@ -127,7 +127,7 @@ clojure compiler optimizes this to a loop:
 #+end_src+
 
 We are now 0.697x of the original java runtime, so faster. We're also somewhat
-cheating at the machine level, but at the language level, `recur` (in my
+cheating at the machine level, but at the language level, ~recur~ (in my
 opinion) is fair game to avoid function call overhead, which java can't do.
 
 
@@ -228,7 +228,7 @@ We can improve this to 3x and stay within Clojure idioms though:
 
 We still incur overhead in a couple of places, namely 
 transduce has some checking inside it's internal loop, 
-and coercing the ArrayList into a seq for `int-array`
+and coercing the ArrayList into a seq for ~int-array~
 is substantially slower than iterating the ArrayList and
 updating a pre-allocated int-array, as java does.  Using
 more interop, we get to 1.07x, slightly slower but not bad: 
@@ -762,7 +762,7 @@ against a clojure implementation that uses a persistent queue.
 As expected, the map-based, persistent queued clojure implementation is 20.8x
 slower than the java implementation that stores information in plain classes and
 uses a mutable queue.  Let's apply the lessons from BFS and use 
-our `deftype` based nodes to build the tree, then search it:
+our ~deftype~ based nodes to build the tree, then search it:
 
 #+begin_src+ clojure
 (defn binary-tree-BFS-test2 [depth tgt]
