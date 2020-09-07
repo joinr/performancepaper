@@ -83,9 +83,9 @@ and 20000000,""
 #+end_src+ 
 
 Off the bat, we are in pretty bad spot. Thankfully this can be heavily mitigated
-by using unchecked math and a type hint (`with-unchecked` has the effect of
-setting `*uncheked-math*` to true for the scope of the body, then reverting to
-`false` after evaluation).
+by using unchecked math and a type hint ( ~with-unchecked~ has the effect of
+setting ~*unchecked-math*~ to true for the scope of the body, then reverting to
+~false~ after evaluation).
 
 #+begin_source clojure
 1.5x
