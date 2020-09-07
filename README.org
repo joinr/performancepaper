@@ -114,17 +114,20 @@ re-enter the fuction with new arguments, while operationally the
 clojure compiler optimizes this to a loop:
 
 #+begin_src clojure
-(defn pure-recursion3 [cnt]
+(defn pure-recursion4 [^long cnt]
   (if (> cnt 0)
-    (recur (dec cnt))))
+  (recur (dec cnt))))
 
- Evaluation count : 9460254 in 6 samples of 1576709 calls.
- Execution time mean : 62.493096 ns
- Execution time std-deviation : 0.772831 ns
- Execution time lower quantile : 61.875935 ns ( 2.5%)
- Execution time upper quantile : 63.504731 ns (97.5%)
- Overhead used : 1.797578 ns
- nil
+Evaluation count : 60482070 in 6 samples of 10080345 calls.
+             Execution time mean : 8.254094 ns
+    Execution time std-deviation : 0.362106 ns
+   Execution time lower quantile : 7.547853 ns ( 2.5%)
+   Execution time upper quantile : 8.492824 ns (97.5%)
+                   Overhead used : 1.804565 ns
+
+Found 1 outliers in 6 samples (16.6667 %)
+	low-severe	 1 (16.6667 %)
+ Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
 #+end_src
 
 We are now 0.697x of the original java runtime, so faster. We're also somewhat
