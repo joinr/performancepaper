@@ -3,27 +3,27 @@
 
 * Introduction 
 
-The author ( [[https://www.diva-portal.org/smash/get/diva2:1424342/FULLTEXT01.pdf][full paper]] ) sought to establish a microbenchmark comparison between simple java
-programs and their implementatiosn in Clojure.  From there, a sample-based
+The author ( [[https://www.diva-portal.org/smash/get/diva2:1424342/FULLTEXT01.pdf][full paper]] ) sought to establish a micro benchmark comparison between simple java
+programs and their implementations in Clojure.  From there, a sample-based
 performance profiling methodology was applied to allow for JIT warm up and
 establish well founded statistical measures of each implementation.  Per the
 author:
 
  "The idea behind this approach was that seeing the way the languages perform in
- common fundamental tasks wouldgive the reader an idea of how the languages will
+ common fundamental tasks would give the reader an idea of how the languages will
  perform in their application. The reason that the fundamental areas selected were
- separated into their ownexperiments rather than putting them all into the same
- program, was so thatthe reader could more easily predict which language is
+ separated into their own experiments rather than putting them all into the same
+ program, was so that the reader could more easily predict which language is
  better for their specific tasks."
 
 "The Java version that was used to execute both the Clojure and the Java
-codewas 1.8.0_60. The JVM was run with the arguments –Xmx11g and -Xss11gto
-increase the max heap and stack space to 11 gigabytes when needed forthe
+code was 1.8.0_60. The JVM was run with the arguments –Xmx11g and -Xss11g to
+increase the max heap and stack space to 11 gigabytes when needed for the
 experiments."
 
 After reading a post about this paper on r/clojure on reddit, I decided to
 walk through the author's code and offer some insights for the Clojure community
-and perhaps the java community regarding the efficiency of the microbenchmarks.
+and perhaps the java community regarding the efficiency of the micro benchmarks.
 
 Where possible, I will delineate apples:apples and apples:oranges during the
 walk through, as well as detail areas where I had to fill in the gaps from the paper
@@ -34,7 +34,7 @@ caveat the results in that I did not explore the same design space as the author
 with regard to experimental parameters (e.g. recursion count, collection size, 
 tree depth, etc.).  Rather, I stuck with relatively small collections amenable
 to quick iterative benchmarking and experimentation.  I believe the resulting
-performance imporovements will hold up at scale though (based on experience).
+performance improvements will hold up at scale though (based on experience).
 
 ** Platform
 All noted measures are on a similar platform as the original paper, namely
@@ -44,12 +44,12 @@ nullify the effects of different hardware.
 *  3.1 Pure Recursion
 
  "The recursion experiment consisted of a number of recursion calls with only
- acounter as a parameter and a simple exit condition. It was designed to test
- theperformance of function calls in the two languages. The counter was a
+ a counter as a parameter and a simple exit condition. It was designed to test
+ the performance of function calls in the two languages. The counter was a
  primitive integer in both languages and was decreased by one for each
- recursivecall."
+ recursive call."
 
-Executiontimes were measured for problem sizes of 2000, 20000, 200000, 2000000
+Execution times were measured for problem sizes of 2000, 20000, 200000, 2000000
 and 20000000,""
 
 #+begin_src java
@@ -110,7 +110,7 @@ Since the original intent was to measure function call overhead,
 we can actually leverage a language feature that clojure provides
 to eliminate that overhead completely.  Where there was naive recursion
 in the original, we can just use the ~recur~ form to semantically 
-re-enter the fuction with new arguments, while operationally the
+re-enter the function with new arguments, while operationally the
 clojure compiler optimizes this to a loop:
 
 #+begin_src clojure
@@ -136,12 +136,12 @@ opinion) is fair game to avoid function call overhead, which java can't do.
 * 3.2 Sorting
 
  "The sorting experiment consisted of sorting a collection of integers. In Clojure
- this was done by sorting alistof integers, shuffled by the shuffle function,
+ this was done by sorting a list of integers, shuffled by the shuffle function,
  using the sort function, all of which are included in the clojure.core library. In
- Java this was done similarly by sorting an array of primitive in-tegers, which
+ Java this was done similarly by sorting an array of primitive integers, which
  was shuffled using java.util.Collections.shuffle, using the Arrays.sort function.
 
- Execution times were measured for collec-tions with 2000, 20000, 200000,
+ Execution times were measured for collections with 2000, 20000, 200000,
  2000000 and 20000000 integers."
 
 #+begin_src java
@@ -268,7 +268,7 @@ more interop, we get to 1.07x, slightly slower but not bad:
 * 3.3 Map Creation
 
 "The map creation experiment consisted of adding integers as keys and values to a
- map. In Java they were added to aHashMapfrom thejava.util library, andin
+ map. In Java they were added to a HashMapfrom thejava.util library, and in
  Clojure they were added to the built-in persistent map data structure.
 
 Execution times were measured for20000, 63246, 200000, 632456 and 2000000
@@ -364,12 +364,12 @@ within the margins.
 * 3.4 Object Creation
 
  "The object creation experiment consisted of creating a linked list without
- val-ues. In Java a custom class was used to create the links while in Clojure
- nestedpresistent maps were used. The links were created backwards in both
- lan-guages, meaning that the first object created would have a next-pointer with
- anull value, and the second object created would point to the first, and so on.
+ values. In Java a custom class was used to create the links while in Clojure
+ nested persistent maps were used. The links were created backwards in both
+ languages, meaning that the first object created would have a next-pointer with
+ a null value, and the second object created would point to the first, and so on.
 
- Execution times were measured for 100000, 316228, 1000000, 3162278and 10000000
+ Execution times were measured for 100000, 316228, 1000000, 3162278 and 10000000
  linked objects"
 
 #+begin_src java
@@ -494,15 +494,15 @@ code.
 * 3.5 Binary Tree DFS
 
  "The binary tree DFS experiment consisted of searching a binary tree for a
- valueit did not contain using depth first search. The depth first search was
+ value it did not contain using depth first search. The depth first search was
  implemented recursively in both languages. In Java the binary tree was
- representedby a custom class while in Clojure they were represented using nested
+ represented by a custom class while in Clojure they were represented using nested
  persistent maps."
 
 We have a similar situation with the object creation in 3.4 here, 
 where the clojure solution is implemented on top of generic 
 hashmaps, while the java implementation leverages classes and 
-field acess.  Persistent hashmaps should have a bit higher
+field access.  Persistent hashmaps should have a bit higher
 instantiation and key lookup cost compared to raw classes.
 
 #+begin_src java
@@ -611,7 +611,7 @@ with potentially lots of room to improve.
 #+end_src
 
 At 12.35x, unboxed numerics and faster keyword access help a bit, but they
-aren't the choke point. We are still allocating though, so building the tree is
+are not the choke point. We are still allocating though, so building the tree is
 probably the slow point.
 
 As before, we know that types are barebones classes.  Direct class
@@ -652,7 +652,7 @@ volatile for perhaps a little gain:
 So that leaves 2.96x; using a custom type and a volatile as a mutable
 counter gets us much closer.  One difference with the java implementation
 is the use of the counter; it's a primitive int array leading to
-unboxed opertions and primitive math.  Our counter (either an atom
+unboxed operations and primitive math.  Our counter (either an atom
 or a volatile) has a tad bit of overhead compared to mutating a 
 primitive array.  Let's copy the java implementation and use
 an array:
@@ -693,10 +693,10 @@ high up and fairly idiomatic.
 * 3.6 Binary Tree BFS
 
 "The binary tree BFS, similar to the binary tree DFS experiment consisted
-ofsearching a binary tree for a value it did not contain, but using breadth
+of searching a binary tree for a value it did not contain, but using breadth
 first search. The breadth first search was implemented iteratively in both
 languages.In Java the binary tree was represented by a custom class while in
-Clojure theywere represented using nested persistent maps."
+Clojure they were represented using nested persistent maps."
 
 #+begin_src java
  public boolean binaryTreeBFS(BinaryTreeNode root, int target)
@@ -782,7 +782,7 @@ our ~deftype~ based nodes to build the tree, then search it:
 #+end_src
 
 We end up at 0.89x, which is surprisingly a bit faster.  I would
-naively expect mutable implementaions to have a 2-4x edge in most
+naively expect mutable implementations to have a 2-4x edge in most
 cases, but we may have a niche for the persistent queue here.
 
 
@@ -816,7 +816,7 @@ clojure implementations - which leverage persistent structures, boxed math, and
 perhaps a bit of overhead compared to their statically typed java counterparts - 
 and then gradually morph toward something closer to the host (java) to level
 the playing field.  We add hints and primitive math, leverage efficient class-based
-field access and instantation, and where necessary, direct java interop to compete
+field access and instantiation, and where necessary, direct java interop to compete
 with java.
 
 I'd like to address some points made by the author: 
@@ -830,10 +830,10 @@ Like any good researcher, the author addresses some possible criticisms openly:
 
 I think we have demonstrated that this is the case for the sample code; although
 I'm not entirely certain if the code in this repository is admissible under
-potentionally unseen criterion in the original paper. If there are no
+potentially unseen criterion in the original paper. If there are no
 constraints placed on Clojure, we can typically get at Java performance given
 the tight level of host interop (as well as more esoteric techniques like
-runtime bytecode gen via asm and similar libararies).  I think the raw
+runtime bytecode gen via asm and similar libraries).  I think the raw
 java implementations still edge out clojure in like-for-like cases (e.g.
 primitive math and mutable collections), but the margins are certainly 
 far less than the range demonstrated in the paper (at least for the 
@@ -841,11 +841,13 @@ subset of testing performed here).
 
 - "This work is intended for private persons and companies to use when
   evaluating which language to use for their programming projects. This saves
-  timeand potentially money for the readers, benefiting the society’s economic
-  sus-tainability positively, albeit very little."
+  time and potentially money for the readers, benefiting the society’s economic
+  sustainability positively, albeit very little."
 
-- "These results strongly suggest that the use of Clojure overJava comes with a
+- "These results strongly suggest that the use of Clojure over Java comes with a
    cost of both startup and runtime performance."
 
 I hope to provide - if not additional context for pedagogical reasons - a bit of
 a counterpoint to the observations in the paper.
+
+#  LocalWords:  interop hashmap barebones clojure hashmaps
