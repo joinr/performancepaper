@@ -39,10 +39,10 @@ public static void Recurse(int cnt)
  Recurse (cnt - 1);}
 
 
-// (defn  pure−recursion [cnt]
+// (defn  pure-recursion [cnt]
 //   (if  (>  cnt  0)
-//     (pure−recursion
-//      (− cnt  1))))
+//     (pure-recursion
+//      (- cnt  1))))
 
 
 //3.2
@@ -68,7 +68,7 @@ public static  int[]  createArray (int  size)
  Arrays.sort(retArr);
  return retArr;}
 
-// (let [list  (−>  (create−list  size (atom  Integer/MIN_VALUE))
+// (let [list  (->  (create-list  size (atom  Integer/MIN_VALUE))
 //                   (shuffle))]
 //   ...) //author elides this, and `create-list` is not provided.
 
@@ -89,11 +89,11 @@ public static  HashMap<Integer ,  Integer> createMap (int  sze)
     retMap.put(i , ++ i ) ;
  return  retMap ;}
 
-// (defn create−map[size]
+// (defn create-map[size]
 //   (loop [map  (transient  {}),
 //          i    (int size)]
 //     (if  (>  i  0)
-//       (recur  (assoc! map i  (+ i 1))  (− i  1) )
+//       (recur  (assoc! map i  (+ i 1))  (- i  1) )
 //       (persistent!  map))))
 
 //3.4 Object Creation
@@ -114,12 +114,12 @@ public static LLNode createObjects (int count )
           last = new LLNode(last) ;
  return last;}
 
-// (defn create−objects [count]
+// (defn create-objects [count]
 //   (loop [last nil
 //          i (int  count)]
 //     (if  (=  0  i )
 //       last
-//       (recur  {:next  last} (− i  1)))))
+//       (recur  {:next  last} (- i  1)))))
 
 //3.5 Binary Tree DFS
 
@@ -150,20 +150,20 @@ public static boolean binaryTreeDFSTest(int depth, int target)
      return binaryTreeDFS(createBinaryTree(depth,counter),target);
   }
 
-    // (defn create−binary−tree [depth counter−atom]
+    // (defn create-binary-tree [depth counter-atom]
     //   (when (> depth  0)
-    //     (let  [val  @counter−atom]
-    //       (swap! counter−atom  inc )
+    //     (let  [val  @counter-atom]
+    //       (swap! counter-atom  inc )
     //       {:value val
-    //        :left  (create−binary−tree  (− depth  1) counter−atom )
-    //        :right (create−binary−tree  (− depth  1) counter−atom )})))
+    //        :left  (create-binary-tree  (- depth  1) counter-atom )
+    //        :right (create-binary-tree  (- depth  1) counter-atom )})))
 
-    // (defn binary−tree−DFS [root  target]
+    // (defn binary-tree-DFS [root  target]
     //   (if  (nil?  root)
     //     false
     //     (or (=  (:value  root)  target)
-    //         (binary−tree−DFS  (:left  root)  target)
-    //         (binary−tree−DFS  (:right root)  target))))
+    //         (binary-tree-DFS  (:left  root)  target)
+    //         (binary-tree-DFS  (:right root)  target))))
 
 //3.6 Binary Tree BFS
 
@@ -190,14 +190,14 @@ public static boolean binaryTreeBFSTest(int depth, int target)
     return binaryTreeBFS(createBinaryTree(depth,counter),target);
     }
 
-// (defn binary−tree−BFS [root target]
+// (defn binary-tree-BFS [root target]
 //   (loop [queue (conj clojure.lang.PersistentQueue/EMPTY root)]
 //     (if (empty? queue)
 //       false
 //       (let [item (peek queue)]
 //         (if (= target (:value item))
 //           true
-//           (recur (as−> (pop queue) $
+//           (recur (as-> (pop queue) $
 //                        (if (nil?  (:left item))
 //                          $
 //                          (conj $ (:left item)))

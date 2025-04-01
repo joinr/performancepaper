@@ -157,7 +157,7 @@
 
 ;;Clojure implemention underspecified
 
-;; (let [list  (−>  (create−list  size (atom  Integer/MIN_VALUE))
+;; (let [list  (->  (create-list  size (atom  Integer/MIN_VALUE))
 ;;                   (shuffle))]
 ;;   ...) ;;author elides this, and `create-list` is not provided.
 
@@ -462,13 +462,13 @@
 ;; Execution time upper quantile : 927.532690 ns (97.5%)
 ;; Overhead used : 1.804565 ns
 
-(defn create-binary-tree [depth counter−atom]
+(defn create-binary-tree [depth counter-atom]
   (when (> depth  0)
-    (let  [val  @counter−atom]
-      (swap! counter−atom  inc )
+    (let  [val  @counter-atom]
+      (swap! counter-atom  inc )
       {:value val
-       :left  (create−binary−tree  (- depth  1) counter−atom )
-       :right (create−binary−tree  (- depth  1) counter−atom )})))
+       :left  (create-binary-tree  (- depth  1) counter-atom )
+       :right (create-binary-tree  (- depth  1) counter-atom )})))
 
 (defn binary-tree-DFS [root target]
   (if  (nil?  root)
@@ -495,8 +495,8 @@
       (let  [val  @counter-atom]
         (swap! counter-atom inc)
         {:value val
-         :left  (create−binary−tree  (- depth  1) counter-atom)
-         :right (create−binary−tree  (- depth  1) counter-atom)}))))
+         :left  (create-binary-tree  (- depth  1) counter-atom)
+         :right (create-binary-tree  (- depth  1) counter-atom)}))))
 
 (defn binary-tree-DFS2 [root ^long target]
   (if  (nil?  root)
