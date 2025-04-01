@@ -495,8 +495,8 @@
       (let  [val  @counter-atom]
         (swap! counter-atom inc)
         {:value val
-         :left  (create-binary-tree  (- depth  1) counter-atom)
-         :right (create-binary-tree  (- depth  1) counter-atom)}))))
+         :left  (create-binary-tree2  (- depth  1) counter-atom)
+         :right (create-binary-tree2  (- depth  1) counter-atom)}))))
 
 (defn binary-tree-DFS2 [root ^long target]
   (if  (nil?  root)
@@ -505,23 +505,22 @@
         (binary-tree-DFS2 (root :left) target)
         (binary-tree-DFS2 (root :right) target))))
 
-;;12.35x, unboxed numerics and faster keyword access help a bit
+;;6.2x, unboxed numerics and faster keyword access help a bit
 ;;We are still allocating though, so building the tree is
 ;;probably the slow point.
 (defn binary-tree-DFS-test2 [depth target]
   (binary-tree-DFS2 (create-binary-tree2 depth (atom 0)) 126))
 
-;; Evaluation count : 54552 in 6 samples of 9092 calls.
-;; Execution time mean : 11.121393 µs
-;; Execution time std-deviation : 168.460662 ns
-;; Execution time lower quantile : 10.878002 µs ( 2.5%)
-;; Execution time upper quantile : 11.307488 µs (97.5%)
-;; Overhead used : 1.804565 ns
+;; Evaluation count : 115992 in 6 samples of 19332 calls.
+;; Execution time mean : 5.588021 µs
+;; Execution time std-deviation : 779.251559 ns
+;; Execution time lower quantile : 5.140534 µs ( 2.5%)
+;; Execution time upper quantile : 6.925430 µs (97.5%)
+;; Overhead used : 2.332732 ns
 
-;; Found 2 outliers in 6 samples (33.3333 %)
+;; Found 1 outliers in 6 samples (16.6667 %)
 ;; low-severe	 1 (16.6667 %)
-;; low-mild	 1 (16.6667 %)
-;; Variance from outliers : 13.8889 % Variance is moderately inflated by outliers
+;; Variance from outliers : 31.8454 % Variance is moderately inflated by outliers
 
 ;;as before, we know that types are barebones classes.
 (deftype binary-node [^int value left right])
